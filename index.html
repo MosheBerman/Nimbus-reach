@@ -50,6 +50,7 @@ body{
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
 }
 #app{
+  position:relative;
   height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;
   padding-left:max(16px, env(safe-area-inset-left, 0px));
   padding-right:max(16px, env(safe-area-inset-right, 0px));
@@ -131,6 +132,8 @@ kbd{font-family:var(--font-pixel);font-size:12px;color:var(--ink);background:var
 #pauseBtn{right:12px;top:10px;width:44px;height:40px;border-radius:4px;font-size:15px}
 #mapSettingsBtn{left:12px;top:10px;width:44px;height:40px;border-radius:4px;font-size:16px}
 #joy{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:3px solid rgba(253,246,239,.45);background:rgba(28,29,69,.35);pointer-events:none}
+#joy.idle{opacity:.28}
+#joy.idle #knob{visibility:hidden}
 #knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(253,246,239,.8);border:3px solid #fff}
 #joyHint{position:absolute;left:18px;bottom:20px;font-family:var(--font-pixel);font-size:13px;color:rgba(253,246,239,.75);pointer-events:none;display:none}
 @media (pointer:coarse){
@@ -166,13 +169,13 @@ kbd{font-family:var(--font-pixel);font-size:12px;color:var(--ink);background:var
     <canvas id="cv" aria-label="Game view"></canvas>
     <div class="hint" id="hint"></div>
     <div id="joyHint">Drag here to roll</div>
-    <div id="joy" hidden><div id="knob"></div></div>
     <button class="tbtn" id="jumpBtn" aria-label="Jump">JUMP</button>
     <button class="tbtn" id="pauseBtn" aria-label="Pause">II</button>
     <button class="tbtn" id="mapSettingsBtn" aria-label="Settings">⚙</button>
     <div id="devBadge" hidden>DEV MODE &middot; all isles open</div>
     <div id="overlay"></div>
   </main>
+  <div id="joy" hidden><div id="knob"></div></div>
 
   <footer id="dash" data-mode="map">
     <div class="d-place">
@@ -500,6 +503,7 @@ const ARROWS = { '8':[0,-1], '2':[0,1], '4':[-1,0], '6':[1,0], '7':[-1,-1], '9':
 const VOID = Object.freeze({ type:'void' });
 const P = 16;
 const FLY_MAX = 8, PAINT_MAX = 10, SHIELD_MAX = 8, MAGNET_MAX = 10, SPEED_MAX = 8, FREEZE_MAX = 6, CARRY = 2.7, GRAV = 22, JUMP_V = 6.4, SPRING_V = 9.4, R = 0.27;
+const COYOTE_MAX = 0.12;
 const SURF = {
   ground:{ acc:30, max:4.4, fric:20 },
   ice:   { acc:6.5, max:7.6, fric:0.45 },
@@ -507,6 +511,7 @@ const SURF = {
   fly:   { acc:20, max:5,   fric:5 },
 };
 const SAVE_KEY = 'nimbus-reach-v3';
+const SITE_VERSION = '1.0.0';
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const NODE_COLS = 6, NODE_ROWS = 3;
 
@@ -876,7 +881,7 @@ function loadLevel(i){
     gemsTotal:gems, gemsLeft:gems, keys:0, score:0,
     time:def.time, timeMax:def.time,
     p:{ x:start.x, y:start.y, vx:0, vy:0, z:0, vz:0, face:{ x:0, y:1 }, eye:{ x:0, y:1 },
-        hp:100, inv:0, flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, tk:-1, safe:{ x:start.x, y:start.y } },
+        hp:100, inv:0, flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, tk:-1, safe:{ x:start.x, y:start.y } },
     status:'play', fallT:0, endT:0, shown:false, reason:'',
     jumpReq:false, jumpHeld:false, jumpBuf:0, freezeT:0, crumbling:[], chunks:[], parts:[], shake:0, hazSfx:0,
     cam:{ x:start.x, y:start.y }, bonus:{},
@@ -935,8 +940,8 @@ const joy = { active:false, id:null, sx:0, sy:0, x:0, y:0, t0:0, moved:false, fl
 function inputVec(){
   if (joy.active) {
     const dx = joy.x - joy.sx, dy = joy.y - joy.sy, m = Math.hypot(dx, dy);
-    if (m < 8) return [0, 0];
-    const k = Math.pow(Math.min(1, Math.max(0, (m - 8) / 52)), 1.4);
+    if (m < 5) return [0, 0];
+    const k = Math.pow(Math.min(1, Math.max(0, (m - 5) / 48)), 1.4);
     return [dx/m*k, dy/m*k];
   }
   let x = 0, y = 0;
@@ -980,8 +985,8 @@ function step(h){
   const grounded = !flying && p.z <= 0;
 
   if (p.jumpCD > 0) p.jumpCD -= h;
-  if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && t.type !== 'magnet') {
-    L.jumpReq = false; L.jumpBuf = 0;
+  if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && t.type !== 'magnet' && (t.type !== 'void' || p.coyote > 0)) {
+    L.jumpReq = false; L.jumpBuf = 0; p.coyote = 0;
     const smax = t.type === 'ice' ? SURF.ice.max : SURF.ground.max;
     const sprint = Math.hypot(p.vx, p.vy) >= smax * 0.85;
     p.vz = JUMP_V * (sprint ? 1.5 : 1); p.z = 0.001; sfx('jump');
@@ -1042,8 +1047,10 @@ function step(h){
     if (p.paintT > 0 && cur.type === 'void' && gx >= 0 && gy >= 0 && gx < L.W && gy < L.H) {
       cur.type = 'painted'; burst(gx + .5, gy + .5, L.theme.paint, 10, 0.3); sfx('paint');
     }
+    if (cur.type === 'void') {
+      if (p.coyote > 0) p.coyote -= h; else { startFall(); return; }
+    } else p.coyote = COYOTE_MAX;
     switch (cur.type) {
-      case 'void': startFall(); return;
       case 'acid': if (p.shieldT <= 0) hurtOverTime(24*h, '#b6ff6a'); break;
       case 'lava': if (p.shieldT <= 0) hurtOverTime(48*h, '#ffb35e'); break;
       case 'crumble':
@@ -1563,6 +1570,7 @@ function setMode(m){
   $('jumpBtn').textContent = playing ? 'JUMP' : 'GO';
   $('pauseBtn').hidden = m !== 'play';
   $('mapSettingsBtn').hidden = m !== 'map';
+  joyIdle();
   $('joyHint').textContent = playing ? 'Drag here to roll' : 'Swipe toward an isle';
   $('joyHint').hidden = !(m === 'play' || m === 'map');
   $('jumpBtn').hidden = !(m === 'play' || m === 'map');
@@ -1712,6 +1720,7 @@ function settingsHTML(){
     <div class="seg"><span class="eyebrow">Sound</span><button class="btn small" data-act="mute" aria-pressed="${!G.muted}">${G.muted ? 'Off' : 'On'}</button></div>
     ${keyHTML()}
     <div class="actions"><button class="btn primary" data-act="settings-back" data-primary>Back</button></div>
+    <p class="lede" style="font-size:12px;opacity:.65">Version ${SITE_VERSION}</p>
   </div>`;
 }
 function pauseHTML(){
@@ -1811,10 +1820,17 @@ cv.addEventListener('click', e => {
   mapTap(e.clientX - r.left, e.clientY - r.top);
 });
 
-const joyEl = $('joy'), knob = $('knob'), jumpBtn = $('jumpBtn'), pauseBtn = $('pauseBtn');
+const joyEl = $('joy'), knob = $('knob'), jumpBtn = $('jumpBtn'), pauseBtn = $('pauseBtn'), app = $('app');
 const JOY_R = 56;
 let jumpTouch = null;
-function endJoy(){ joy.active = false; joy.id = null; joyEl.hidden = true; knob.style.transform = ''; }
+function endJoy(){ joy.active = false; joy.id = null; joyIdle(); }
+function joyIdle(){
+  joyEl.classList.add('idle');
+  joyEl.hidden = G.mode !== 'play';
+  joyEl.style.top = 'auto'; joyEl.style.bottom = '16px'; joyEl.style.left = '16px';
+  joyEl.style.transform = 'scale(.55)'; joyEl.style.transformOrigin = 'bottom left';
+  knob.style.transform = '';
+}
 function jumpDown(){
   audio(); jumpBtn.classList.add('on');
   const wasPlay = G.mode === 'play';
@@ -1822,19 +1838,22 @@ function jumpDown(){
   if (wasPlay && L) L.jumpHeld = true;
 }
 function jumpUp(){ jumpTouch = null; jumpBtn.classList.remove('on'); if (L) L.jumpHeld = false; }
-function stagePt(t){ const r = stage.getBoundingClientRect(); return { x:t.clientX - r.left, y:t.clientY - r.top, w:r.width }; }
+function appPt(t){ const r = app.getBoundingClientRect(); return { x:t.clientX - r.left, y:t.clientY - r.top, w:r.width }; }
+function appToStage(q){ const a = app.getBoundingClientRect(), s = stage.getBoundingClientRect(); return { x:q.x - (s.left - a.left), y:q.y - (s.top - a.top) }; }
 function placeJoy(){
+  joyEl.classList.remove('idle');
+  joyEl.style.bottom = 'auto'; joyEl.style.transform = '';
   joyEl.style.left = joy.sx + 'px'; joyEl.style.top = joy.sy + 'px';
   const dx = joy.x - joy.sx, dy = joy.y - joy.sy, m = Math.hypot(dx, dy), k = m > 40 ? 40/m : 1;
   knob.style.transform = `translate(${dx*k}px, ${dy*k}px)`;
 }
-// Left side of the playfield: a joystick appears centered under the thumb. Right side: hold to keep jumping.
-stage.addEventListener('touchstart', e => {
+// Left side of the app: a joystick appears centered under the thumb, even over the dashboard. Right side: hold to keep jumping.
+app.addEventListener('touchstart', e => {
   if (e.target.closest('#overlay') || e.target.closest('button')) return;
   e.preventDefault(); audio();
   if (G.mode !== 'play' && G.mode !== 'map') return;
   for (const t of e.changedTouches) {
-    const q = stagePt(t);
+    const q = appPt(t);
     if (G.mode === 'play' && q.x > q.w*0.6) { if (jumpTouch === null) { jumpTouch = t.identifier; jumpDown(); } continue; }
     // A new thumb always takes over, so a lost touch can never leave the joystick stuck.
     joy.active = true; joy.id = t.identifier;
@@ -1850,7 +1869,7 @@ window.addEventListener('touchmove', e => {
   for (const t of e.touches) {
     if (t.identifier !== joy.id) continue;
     found = true;
-    const q = stagePt(t); joy.x = q.x; joy.y = q.y;
+    const q = appPt(t); joy.x = q.x; joy.y = q.y;
     let dx = joy.x - joy.sx, dy = joy.y - joy.sy, m = Math.hypot(dx, dy);
     if (m > 10) joy.moved = true;
     if (G.mode === 'play' && m > JOY_R) { joy.sx = joy.x - dx/m*JOY_R; joy.sy = joy.y - dy/m*JOY_R; dx = joy.x - joy.sx; dy = joy.y - joy.sy; m = JOY_R; }
@@ -1865,9 +1884,9 @@ window.addEventListener('touchmove', e => {
 function touchEnd(e){
   for (const t of e.changedTouches) {
     if (joy.active && t.identifier === joy.id) {
-      const tap = !joy.moved && performance.now() - joy.t0 < 350, x = joy.sx, y = joy.sy;
+      const tap = !joy.moved && performance.now() - joy.t0 < 350, sq = appToStage({ x:joy.sx, y:joy.sy });
       endJoy();
-      if (tap && G.mode === 'map' && e.type === 'touchend') mapTap(x, y);
+      if (tap && G.mode === 'map' && e.type === 'touchend') mapTap(sq.x, sq.y);
     }
     if (t.identifier === jumpTouch) jumpUp();
   }
