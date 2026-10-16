@@ -959,15 +959,10 @@ function moveAxis(ax, amt){
   if (ax === 0) p.x += amt; else p.y += amt;
   const x0 = Math.floor(p.x - R), x1 = Math.floor(p.x + R), y0 = Math.floor(p.y - R), y1 = Math.floor(p.y + R);
   for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
-    if (!solidAt(tx,ty)) continue;
     const t = tileAt(tx,ty);
-    if (t.type === 'lock' && L.keys > 0) {
-      L.keys--; t.type = 'ground';
-      burst(tx + .5, ty + .5, '#ffd36b', 18, 0.6); sfx('unlock');
-      continue;
-    }
+    if (p.flyT > 0 && (t.type === 'wall' || t.type === 'veil')) continue;
+    if (!solidAt(tx,ty)) continue;
     const v = ax === 0 ? p.vx : p.vy;
-    if (t.type === 'wall' && p.flyT > 0 && L.status === 'play') { fail('wall'); return; }
     if (ax === 0) p.x = amt > 0 ? tx - R - 1e-4 : tx + 1 + R + 1e-4;
     else p.y = amt > 0 ? ty - R - 1e-4 : ty + 1 + R + 1e-4;
     if (Math.abs(v) > 2.2) sfx('bump');
@@ -985,6 +980,21 @@ function step(h){
   const grounded = !flying && p.z <= 0;
 
   if (p.jumpCD > 0) p.jumpCD -= h;
+  if (L.jumpReq && L.keys > 0) {
+    let bx = -1, by = -1, bd = 0.3;
+    for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+      if (!ox && !oy) continue;
+      const dx = Math.floor(p.x) + ox, dy = Math.floor(p.y) + oy;
+      if (tileAt(dx, dy).type !== 'lock') continue;
+      const m = Math.hypot(ox, oy), dot = (ox*p.face.x + oy*p.face.y) / m;
+      if (dot > bd) { bd = dot; bx = dx; by = dy; }
+    }
+    if (bx >= 0) {
+      L.keys--; tileAt(bx, by).type = 'ground';
+      burst(bx + .5, by + .5, '#ffd36b', 18, 0.6); sfx('unlock');
+      L.jumpReq = false; L.jumpBuf = 0;
+    }
+  }
   if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && t.type !== 'magnet' && (t.type !== 'void' || p.coyote > 0)) {
     L.jumpReq = false; L.jumpBuf = 0; p.coyote = 0;
     const smax = t.type === 'ice' ? SURF.ice.max : SURF.ground.max;
@@ -1051,6 +1061,7 @@ function step(h){
       if (p.coyote > 0) p.coyote -= h; else { startFall(); return; }
     } else p.coyote = COYOTE_MAX;
     switch (cur.type) {
+      case 'wall': case 'veil': fail('wall'); return;
       case 'acid': if (p.shieldT <= 0) hurtOverTime(24*h, '#b6ff6a'); break;
       case 'lava': if (p.shieldT <= 0) hurtOverTime(48*h, '#ffb35e'); break;
       case 'crumble':
@@ -1110,7 +1121,7 @@ function updateMonsters(h){
       e.cx += e.vx*h; e.cy += e.vy*h;
     }
     const dx = p.x - e.cx, dy = p.y - e.cy, d = Math.hypot(dx, dy);
-    if (d < 0.58 && p.z < 0.6 && p.inv <= 0) {
+    if (d < 0.58 && p.z < 0.6 && p.flyT <= 0 && p.inv <= 0) {
       const m = d || 1;
       if (p.shieldT > 0) { p.vx = dx/m*4; p.vy = dy/m*4; if (e.kind === 'bug') { e.vx = -e.vx; e.vy = -e.vy; } sfx('bump'); continue; }
       p.inv = 1.2; L.shake = 0.35;
@@ -1565,7 +1576,7 @@ function setMode(m){
   dash.dataset.mode = (m === 'play' || m === 'paused' || m === 'result') ? 'play' : 'map';
   const playing = dash.dataset.mode === 'play';
   $('hint').innerHTML = playing
-    ? '<kbd>Arrows</kbd> roll &middot; <kbd>Space</kbd> jump &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound'
+    ? '<kbd>Arrows</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound'
     : '<kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Enter</kbd> replay this isle &middot; <kbd>Esc</kbd> title';
   $('jumpBtn').textContent = playing ? 'JUMP' : 'GO';
   $('pauseBtn').hidden = m !== 'play';
@@ -1644,7 +1655,7 @@ const GUIDE = [
   ['fly', 1, 'Feather', 'Fly over sky and hazards for 8 seconds.'],
   ['potion', 0, 'Potion', 'Restores 40 health.'],
   ['clock', 0, 'Clock', 'Adds 20 seconds of daylight.'],
-  ['lock', 0, 'Lock and key', 'Each key opens one lock.'],
+  ['lock', 0, 'Lock and key', 'Face a door and press jump with a key to open it.'],
   ['puff', 0, 'Storm puff', 'Patrols back and forth. Costs 25 health.'],
   ['magtile', 0, 'Magnet tile', 'No jumping from magnet tiles.'],
   ['veil', 0, 'Veil wall', 'Nearly invisible. Watch for the shimmer.'],
@@ -1670,7 +1681,7 @@ function titleHTML(){
     <h1>Nimbus Reach</h1>
     <p class="lede">Roll across eighteen floating isles in six kingdoms. Collect every crystal before the daylight runs out, and watch your health: acid, lava, storm puffs and long drops all take their toll. On the kingdom map your marble sits in the middle with an isle in each direction. Roll toward a new isle to play it, or roll through a cleared one to reach the isles beyond.</p>
     <div class="actions"><button class="btn primary" data-act="map" data-primary>Open the kingdom map</button></div>
-    <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
+    <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
     ${dev ? '<p class="lede dev-note">Dev mode is on: every isle is open for testing. Your real progress is untouched. <button class="btn" data-act="devoff">Turn off dev mode</button></p>' : ''}
     <p class="lede touch-only" style="font-size:14px">Put your thumb anywhere on the left side and drag to roll. Hold JUMP, or anywhere on the right side, to keep hopping. On the map, swipe or tap toward an isle.</p>
     ${rollHTML()}
@@ -1707,7 +1718,7 @@ function gameOverHTML(){
 }
 function keyHTML(){
   return `<h3>Keys</h3>
-    <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
+    <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
     <p class="lede key-only" style="font-size:14px">On the kingdom map: <kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Enter</kbd> replay this isle &middot; <kbd>Esc</kbd> title</p>
     <p class="lede touch-only" style="font-size:14px">Put your thumb anywhere on the left side and drag to roll. Hold JUMP, or anywhere on the right side, to keep hopping. On the map, swipe or tap toward an isle.</p>`;
 }
