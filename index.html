@@ -221,6 +221,10 @@ const THEMES = [
   { id:'ember',  name:'Emberfall',     sky:['#2a0b1c','#7a2230','#ff9450'], ground:['#e8d6c8','#9a786a','#5f463d'], wall:['#7d6578','#4c384a','#2a1e29'], paint:'#6ff0c0', haze:'#ffd8c0' },
   { id:'arrow',  name:'Arrow Kingdom', sky:['#21185c','#4a3ab0','#f4c56a'], ground:['#fff5dc','#d4b97f','#9e824c'], wall:['#c3cbff','#5866d0','#353f9c'], paint:'#ff86d0', haze:'#ffeedd' },
   { id:'storm',  name:'Stormspire',    sky:['#140f24','#3a2d60','#a596d6'], ground:['#e2def0','#9890b8','#625a86'], wall:['#8d86b0','#4f4878','#2c2650'], paint:'#ffe066', haze:'#dcd4ff' },
+  { id:"vault", name:"The Vaults", sky:["#1a1030","#4a2d70","#8a6ac0"], ground:["#d8d0e8","#8a7ab0","#5a4a80"], wall:["#6a5a9a","#3a2d5a","#241a3a"], paint:"#7ef0d2", haze:"#c0b0e8" },
+  { id:"rift", name:"Shatter Isles", sky:["#0e2a33","#2a6a7a","#9adfff"], ground:["#dfe8e4","#8aa8a0","#556a64"], wall:["#e08a5a","#a05a3a","#5a3020"], paint:"#ffd84a", haze:"#cfeef2" },
+  { id:"gauntlet", name:"The Gauntlet", sky:["#2a1a08","#7a4a1a","#ffb050"], ground:["#f0e0c0","#b09060","#705830"], wall:["#d0d0e8","#7070a0","#3a3a60"], paint:"#ff86d0", haze:"#ffe8c0" },
+  { id:"prism", name:"Prism Skies", sky:["#1a3a6a","#5aa8e8","#e8f8ff"], ground:["#f8f0ff","#c0a8e8","#8870b8"], wall:["#ffd0e8","#e87aa8","#a04a78"], paint:"#6ff0c0", haze:"#ffffff" },
 ];
 
 /*LEVELS*/
@@ -473,11 +477,191 @@ const LEVELS = [
     '..##*...........*##..',
     '...##***********##...',
     '....#############....']},
+// ---- The Vaults ----
+  { k:6, name:'Room to Room', time:170, walled:true, map:[
+    '########W#######W#######',
+    '#S#*####W#*###F#W##*####',
+    '############*###########',
+    '#####*##W####*##W#o##*##',
+    '########W#######W#######',
+    'WWWW#WWWWWWW#WWWWWWW#WWW',
+    '########W#######W#######',
+    '###*####W#*#####W##*##o#',
+    '########################',
+    '#####*##W#F##*##W###e*##',
+    '########W#######W#######',
+  ]},
+  { k:6, name:'Veilwalk', time:170, walled:true, map:[
+    '########################',
+    '#S######v###############',
+    '#####e##v############o##',
+    '########v###############',
+    '##########vvvvvv########',
+    '##########v#**#v##f#####',
+    '############**#v########',
+    '##########vvvvvv########',
+    '################vvvvvvvv',
+    '##*#################.##*',
+    '################vvvvvvvv',
+  ]},
+  { k:6, name:'Dead Ends', time:210, walled:true, map:[
+    'WWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WS##W*L#######W########*W',
+    'WWW#WWWWW#WWW#W#WWWWWWWWW',
+    'W#W#W#####W###W#####W###W',
+    'W#W#W#WWWWW#WWW#WWW#W#W#W',
+    'W###W#W##kW#W*W#W###W#W#W',
+    'W#WWW#W#WWW#W#W#W#WWW#W#W',
+    'W#####W###W#W###W#####W#W',
+    'WWWWWWW#W#W#WWWWWWW#WWW#W',
+    'W#######W#W#W#####WkW###W',
+    'W#WWWWWWW#W#W#WWW#WWW#W#W',
+    'W#####L*W#####W*###f#eW*W',
+    'WWWWWWWWWWWWWWWWWWWWWWWWW',
+  ]},
+
+  // ---- Shatter Isles ----
+  { k:7, name:'Icewind Spiral', time:190, walled:true, map:[
+    '##############################',
+    '#Siiiiiiii*iiiiiiiiW#####i#i#i',
+    '#W##############W#i#####i#i#i#',
+    '#iiiiiiiii*iiiiii#i######i**#i',
+    '#i#W##########W#i#i#####i#**i#',
+    '#i#iiiiii*iiiii#i#i#*####i#i#i',
+    '#i#i#iiiiiiiiiiiiii##..#i#i#i#',
+    '#i#i#iiiiiiiiii#i#*####e######',
+    '#i#i#W########W#i#i#####*#*#*#',
+    '#i#iiiiiiiii*iiii#i###########',
+    '#i#W############W#i######*#*##',
+    '#iiiiiiii*iiiiiiiiiW#########*',
+    '#W############################',
+  ]},
+  { k:7, name:'Ember Holes', time:200, walled:true, map:[
+    'llllllllllllllllllllllllll',
+    'llllllll###k#######WWWWWWW',
+    'llllllllkllllllllllL*#L**W',
+    'llllllll#llllllllllW#*L**W',
+    'llllllll#llllllllllWWWWWWW',
+    'll###.e####llllllllWWWWWWl',
+    'll#lllllll##.k###llW*#*#Wl',
+    'll#lllllllllllll#llW####Wl',
+    'll#lllllllllllllfllW###*Wl',
+    'l###olllllllllll#llWWLWWWl',
+    'l#S##lllllllll#k#######lll',
+    'l####lllllllllllllllllllll',
+  ]},
+  { k:7, name:'Skipping Stones', time:180, walled:false, map:[
+    '..............................',
+    '..............................',
+    '............#f###.............',
+    '............#####.............',
+    '............*###*.*#......*##.',
+    '..................##..*#..#F#.',
+    '......................##..##*.',
+    '.................#*#..........',
+    '.......*##.......###..##j#....',
+    '.*###..###..j#*#.###..###e....',
+    '.#So#..##*..####......#*##....',
+    '.###*.......###*..............',
+    '..............................',
+  ]},
+
+  // ---- The Gauntlet ----
+  { k:8, name:'Arrow Run', time:160, walled:true, map:[
+    '..............................',
+    '..............................',
+    '..............................',
+    '...................######.....',
+    '...................######666.*',
+    '.S##666666663......######.....',
+    '.............3.6666######.....',
+    '..................2444444.....',
+    '................###...........',
+    '................#o#...........',
+    '..............................',
+  ]},
+  { k:8, name:'Magnet Mile', time:180, walled:true, map:[
+    '..........................',
+    '..........................',
+    '....m..mmmm.....memm..m...',
+    '....m..m..m.....m..m..m...',
+    '....m..m..*..mmmm..m..*...',
+    '....*..m..m..m..*..m..m...',
+    '....m..m..f..m..m..f..m...',
+    '....m..m..m..*..m..m..m...',
+    '....m..*..m..m..m..*..m...',
+    '....m..m..m..m..m..m..m...',
+    '....mmmm..mmmm..m..mmmm...',
+    '**.p#..m..............#S#.',
+    '..........................',
+  ]},
+  { k:8, name:'Patrol Hall', time:170, walled:true, map:[
+    '############################',
+    '#S#*#e##ccccc#*##########*##',
+    '##WWWWWWWWWWWWWWWWWWWWWWWW##',
+    '#*WWWWWWWWWWWWWWWWWWWWWWWW##',
+    '##WWWWWWWWWWWWWWWWWWWWWWWWf#',
+    '##WWWWWWWWWWWWWWWWWWWWWWWWc#',
+    '##WWWWWWWWWWWWWWWWWWWWWWWWc#',
+    '##WWWWWWWWWWWWWWWWWWWWWWWWc#',
+    '#fWWWWWWWWWWWWWWWWWWWWWWWW##',
+    '#*WWWWWWWWWWWWWWWWWWWWWWWW*#',
+    '##WWWWWWWWWWWWWWWWWWWWWWWW##',
+    '###*######o###*###ccecc#####',
+    '############################',
+  ]},
+
+  // ---- Prism Skies ----
+  { k:9, name:'Prism Vault', time:230, walled:false, map:[
+    '..............................',
+    '..........................SP..',
+    '..........................P...',
+    '..............................',
+    '........WWWWWWWWWWWW..........',
+    '........W**********W..P.......',
+    '........W**e***e***W..........',
+    '........W**********W..........',
+    '........WWWWWLWWWWWW..........',
+    '..............................',
+    '..........P.......P.......o#..',
+    '..........................#k..',
+    '..............................',
+  ]},
+  { k:9, name:'Springtide', time:180, walled:false, map:[
+    '........................',
+    '...................*#*#.',
+    '...................*##*.',
+    '.............*j#F.......',
+    '.............###*.......',
+    '.......*j##.............',
+    '.......###*.............',
+    '..............*jF#......',
+    '..............###*......',
+    '........*j##............',
+    '........###*............',
+    '.*##j#..................',
+    '.#S##*..................',
+    '........................',
+  ]},
+  { k:9, name:'Daylight Run', time:100, walled:false, map:[
+    '..................................',
+    '..................................',
+    '..................................',
+    '...............................*##',
+    '.####cccccoc.cccccoc.ccccoc.ccc#*#',
+    '.#S##ccc*ccc.c*ccccc.c*cccc.*cc##*',
+    '.##e#..........................###',
+    '...............................*##',
+    '..................................',
+    '..................................',
+    '..................................',
+  ]},
 ];
 /*END*/
 
 /* Each isle's own mix of monsters and power-ups (placed on open ground, away from the start). */
-const COMBOS = [
+
+  const COMBOS = [
   { mon:{ puff:2 }, pow:['clock'] },
   { mon:{ puff:2 }, pow:['magnet','soup','fly'] },
   { mon:{ puff:2 }, pow:['shield','paint'] },
@@ -496,8 +680,19 @@ const COMBOS = [
   { mon:{ puff:3 }, pow:['shield','magnet','soup','fly'] },
   { mon:{ puff:3 }, pow:['speed','freeze','soup'] },
   { mon:{ puff:4 }, pow:['shield','clock','paint'] },
+  { mon:{ puff:2 }, pow:['speed','clock'] },
+  { mon:{ puff:2 }, pow:['shield','clock'] },
+  { mon:{ puff:2 }, pow:['freeze','clock'] },
+  { mon:{ puff:3 }, pow:['shield','soup'] },
+  { mon:{ puff:2 }, pow:['speed','clock'] },
+  { mon:{ puff:3 }, pow:['shield','soup'] },
+  { mon:{ puff:2 }, pow:['fly','clock'] },
+  { mon:{ puff:2 }, pow:['speed','shield'] },
+  { mon:{ puff:3 }, pow:['magnet','soup'] },
+  { mon:{ puff:4 }, pow:['freeze','clock'] },
+  { mon:{ puff:3 }, pow:['paint','shield'] },
+  { mon:{ puff:2 }, pow:['fly','clock'] },
 ];
-
 /* ================= Constants ================= */
 const ARROWS = { '8':[0,-1], '2':[0,1], '4':[-1,0], '6':[1,0], '7':[-1,-1], '9':[1,-1], '1':[-1,1], '3':[1,1] };
 const VOID = Object.freeze({ type:'void' });
@@ -511,9 +706,9 @@ const SURF = {
   fly:   { acc:20, max:5,   fric:5 },
 };
 const SAVE_KEY = 'nimbus-reach-v3';
-const SITE_VERSION = '1.0.0';
+const SITE_VERSION = '1.1.0';
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const NODE_COLS = 6, NODE_ROWS = 3;
+const NODE_COLS = 10, NODE_ROWS = 3;
 
 let save = { open:[0], best:{} };
 try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && Array.isArray(s.open)) save = s; } catch (e) {}
@@ -1679,7 +1874,7 @@ function titleHTML(){
   return `<div class="panel">
     <span class="eyebrow">A marble adrift above six kingdoms</span>
     <h1>Nimbus Reach</h1>
-    <p class="lede">Roll across eighteen floating isles in six kingdoms. Collect every crystal before the daylight runs out, and watch your health: acid, lava, storm puffs and long drops all take their toll. On the kingdom map your marble sits in the middle with an isle in each direction. Roll toward a new isle to play it, or roll through a cleared one to reach the isles beyond.</p>
+    <p class="lede">Roll across thirty floating isles in ten kingdoms. Collect every crystal before the daylight runs out, and watch your health: acid, lava, storm puffs and long drops all take their toll. On the kingdom map your marble sits in the middle with an isle in each direction. Roll toward a new isle to play it, or roll through a cleared one to reach the isles beyond.</p>
     <div class="actions"><button class="btn primary" data-act="map" data-primary>Open the kingdom map</button></div>
     <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
     ${dev ? '<p class="lede dev-note">Dev mode is on: every isle is open for testing. Your real progress is untouched. <button class="btn" data-act="devoff">Turn off dev mode</button></p>' : ''}
