@@ -208,6 +208,7 @@ kbd{font-family:var(--font-pixel);font-size:12px;color:var(--ink);background:var
   o  clock (+20s)    F  flight feather P  paint pot     j  spring
   c  crumble         i  ice            a  acid          l  lava
   e  storm puff (patrols across)       f  storm puff (patrols up and down)
+  v  veil wall (nearly invisible)     m  magnet tile (no jumping)
   1-9 arrow tiles, numpad directions (8 up, 6 right, 9 up-right ...)
   Walled levels get a wall border; short rows are padded.                 */
 const THEMES = [
@@ -634,6 +635,19 @@ function tileSprite(t, th, x, y){
       px(g, 1, 5, P-2, 1, m); px(g, 7, 1, 1, 4, m); px(g, 3, 6, 1, 5, m); px(g, 11, 6, 1, 5, m);
       px(g, 5, 12, 1, 3, edge); px(g, 11, 12, 1, 3, edge);
     });
+    case 'veil': { const f = reduceMotion ? 0 : Math.floor(T*2) % 2; return sprite('veil' + f, P, P, g => {
+      const e = 'rgba(205,216,245,0.55)';
+      px(g, 0, 0, P, 1, e); px(g, 0, P-1, P, 1, e); px(g, 0, 0, 1, P, e); px(g, P-1, 0, 1, P, e);
+      const m = 'rgba(255,255,255,' + (f ? 0.9 : 0.35) + ')';
+      px(g, 4, 5, 1, 1, m); px(g, 11, 10, 1, 1, m);
+      if (f) { px(g, 8, 3, 1, 1, m); px(g, 3, 12, 1, 1, m); }
+    }); }
+    case 'magnet': return sprite('mg' + v, P, P, g => {
+      bevel(g, '#8a94b8', v);
+      px(g, 2, 3, 4, 9, '#d84a4a'); px(g, 10, 3, 4, 9, '#d84a4a');
+      px(g, 2, 3, 4, 3, '#f4f4f4'); px(g, 10, 3, 4, 3, '#f4f4f4');
+      px(g, 2, 10, 12, 2, '#5a6488');
+    });
     case 'lock': return sprite('lock', P, P, g => {
       bevel(g, '#ffd65c', 0);
       px(g, 0, 11, P, 5, '#d9962a'); px(g, 0, 15, P, 1, '#8a5a16'); px(g, 0, 11, P, 1, '#f2b84a');
@@ -666,6 +680,7 @@ function cliffSprite(type, th){
     if (type === 'lava') { side = '#8c1d0e'; deep = '#4f0e06'; }
     if (type === 'lock') { side = '#8a5a16'; deep = '#4f320c'; }
     if (type === 'crumble') { side = '#9c8778'; deep = '#6a5a50'; }
+    if (type === 'veil') { side = 'rgba(190,200,235,0.4)'; deep = 'rgba(120,130,180,0.25)'; }
     px(g, 0, 0, P, 4, side); px(g, 0, 4, P, 2, deep);
     for (const x of [2, 6, 10, 13]) px(g, x, 6, 2, 1, deep);
     px(g, 0, 0, P, 1, darken(side, .25));
@@ -828,6 +843,8 @@ function charTile(ch){
     case 'l': return { type:'lava' };
     case 'L': return { type:'lock' };
     case 'j': return { type:'spring' };
+    case 'v': return { type:'veil' };
+    case 'm': return { type:'magnet' };
   }
   if (ARROWS[ch]) { const [dx,dy] = ARROWS[ch]; const m = Math.hypot(dx,dy); return { type:'arrow', d:[dx/m, dy/m], ch }; }
   return { type:'ground' };
@@ -861,7 +878,7 @@ function loadLevel(i){
     p:{ x:start.x, y:start.y, vx:0, vy:0, z:0, vz:0, face:{ x:0, y:1 }, eye:{ x:0, y:1 },
         hp:100, inv:0, flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, tk:-1, safe:{ x:start.x, y:start.y } },
     status:'play', fallT:0, endT:0, shown:false, reason:'',
-    jumpReq:false, jumpHeld:false, jumpBuf:0, noJump:!!def.noJump, freezeT:0, crumbling:[], chunks:[], parts:[], shake:0, hazSfx:0,
+    jumpReq:false, jumpHeld:false, jumpBuf:0, freezeT:0, crumbling:[], chunks:[], parts:[], shake:0, hazSfx:0,
     cam:{ x:start.x, y:start.y }, bonus:{},
   };
   held.length = 0;
@@ -878,7 +895,7 @@ function populate(i, W, H, tiles, items, enemies, start){
   const r = rng(i*7919 + 31);
   const sx = Math.floor(start.x), sy = Math.floor(start.y);
   const taken = new Set(enemies.map(e => e.y*W + e.x));
-  const walk = k => k >= 0 && k < W*H && (tiles[k].type === 'ground' || tiles[k].type === 'painted');
+  const walk = k => k >= 0 && k < W*H && (tiles[k].type === 'ground' || tiles[k].type === 'painted' || tiles[k].type === 'magnet');
   const cands = minD => {
     const out = [];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -908,7 +925,7 @@ function populate(i, W, H, tiles, items, enemies, start){
   for (const it of c.pow) { const k = pick(4); if (k >= 0) items[k] = it; }
 }
 function tileAt(x,y){ if (x < 0 || y < 0 || x >= L.W || y >= L.H) return VOID; return L.tiles[y*L.W + x]; }
-const enemyWalk = (x,y) => { const t = tileAt(x,y).type; return t === 'ground' || t === 'painted'; };
+const enemyWalk = (x,y) => { const t = tileAt(x,y).type; return t === 'ground' || t === 'painted' || t === 'magnet'; };
 
 /* ================= Input ================= */
 const KEYMAP = { ArrowUp:'up', KeyW:'up', ArrowDown:'down', KeyS:'down', ArrowLeft:'left', KeyA:'left', ArrowRight:'right', KeyD:'right' };
@@ -930,7 +947,7 @@ function inputVec(){
 }
 
 /* ================= Play: physics ================= */
-function solidAt(tx,ty){ const t = tileAt(tx,ty).type; return t === 'wall' || t === 'lock'; }
+function solidAt(tx,ty){ const t = tileAt(tx,ty).type; return t === 'wall' || t === 'lock' || t === 'veil'; }
 function moveAxis(ax, amt){
   const p = L.p;
   if (!amt) return;
@@ -963,7 +980,7 @@ function step(h){
   const grounded = !flying && p.z <= 0;
 
   if (p.jumpCD > 0) p.jumpCD -= h;
-  if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && !L.noJump) {
+  if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && t.type !== 'magnet') {
     L.jumpReq = false; L.jumpBuf = 0;
     const smax = t.type === 'ice' ? SURF.ice.max : SURF.ground.max;
     const sprint = Math.hypot(p.vx, p.vy) >= smax * 0.85;
@@ -1040,7 +1057,7 @@ function step(h){
           sfx('spring');
         }
         break;
-      case 'ground': case 'painted': p.safe = { x:gx + .5, y:gy + .5 }; break;
+      case 'ground': case 'painted': case 'magnet': p.safe = { x:gx + .5, y:gy + .5 }; break;
     }
   }
 
@@ -1188,7 +1205,12 @@ function update(dt){
     if (L.fallT > 0.95) finishFall();
   } else {
     L.endT += dt;
-    if (L.endT > 1.15 && !L.shown) { L.shown = true; setMode('result'); show(L.status === 'won' ? winHTML() : (G.lives > 0 ? failHTML() : gameOverHTML())); }
+    if (L.endT > 1.15 && !L.shown) {
+      L.shown = true;
+      if (L.status === 'won') { setMode('result'); show(winHTML()); }
+      else if (G.lives > 0) playIsle(G.level);
+      else { setMode('result'); show(gameOverHTML()); }
+    }
   }
   const sp = Math.hypot(p.vx, p.vy);
   if (sp > 0.4 && L.status === 'play') { p.face.x = p.vx/sp; p.face.y = p.vy/sp; }
@@ -1403,7 +1425,7 @@ function renderMap(dt){
   const here = MAP.anim && !MAP.anim.play && MAP.anim.t > 0.5 ? MAP.anim.to : MAP.at;
   drawSky(dt, THEMES[Math.max(0, nodeCR(here)[0])], 0, 0);
   labels.length = 0;
-  const g = compassGeom(), compact = VW < 560;
+  const g = compassGeom();
   for (const dir of DIR_ORDER) {
     if (neighbor(MAP.at, dir) === null) continue;
     const [sx, sy] = g.slots[dir], steps = Math.max(4, Math.round(Math.hypot(sx - g.cx, sy - g.cy) / 6));
@@ -1414,7 +1436,7 @@ function renderMap(dt){
   }
   drawIsland(MAP.at, g.cx, g.cy, 3);
   labels.push({ x:g.cx, y:g.cy + P + 14, center:true,
-    text: MAP.at === HOME ? 'Home cloud' : (compact ? isleCode(MAP.at) : `${isleCode(MAP.at)} ${LEVELS[MAP.at].name}`),
+    text: MAP.at === HOME ? 'Home cloud' : `${isleCode(MAP.at)} ${LEVELS[MAP.at].name}`,
     sub: MAP.at === HOME ? '' : (isCleared(MAP.at) ? (isTouch ? 'Tap me to replay' : 'Enter to replay') : (isTouch ? 'Tap me to play' : 'Enter to play')) });
   for (const dir of DIR_ORDER) {
     const n = neighbor(MAP.at, dir), [sx, sy] = g.slots[dir];
@@ -1423,7 +1445,7 @@ function renderMap(dt){
     if (n !== HOME && isCleared(n)) b.drawImage(itemSprite('gem'), sx + P - 6, sy - P - 9);
     const fresh = n !== HOME && !isCleared(n);
     labels.push({ x:sx, y:sy + P + 14, fresh,
-      text: n === HOME ? 'Home' : (compact ? isleCode(n) : `${isleCode(n)} ${LEVELS[n].name}`),
+      text: n === HOME ? 'Home' : `${isleCode(n)} ${LEVELS[n].name}`,
       sub: n === HOME ? 'Roll home' : fresh ? 'New isle' : 'Cleared' });
   }
   let mx = g.cx, my = g.cy, hop = reduceMotion ? 0 : Math.abs(Math.sin(T*3))*2;
@@ -1616,6 +1638,8 @@ const GUIDE = [
   ['clock', 0, 'Clock', 'Adds 20 seconds of daylight.'],
   ['lock', 0, 'Lock and key', 'Each key opens one lock.'],
   ['puff', 0, 'Storm puff', 'Patrols back and forth. Costs 25 health.'],
+  ['magtile', 0, 'Magnet tile', 'No jumping from magnet tiles.'],
+  ['veil', 0, 'Veil wall', 'Nearly invisible. Watch for the shimmer.'],
   ['shield', 0, 'Shield bubble', '8 seconds safe from monsters, acid and lava.'],
   ['magnet', 0, 'Magnet', 'Pulls in nearby crystals for 10 seconds.'],
   ['speed', 0, 'Lightning', 'Rolls 45% faster for 8 seconds.'],
@@ -1627,6 +1651,7 @@ function drawIcon(c){
   const g = c.getContext('2d');
   if (['gem','potion','clock','fly','paint','shield','magnet','speed','freeze'].includes(kind)) { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(itemSprite(kind, th.paint), 0, 0); }
   else if (kind === 'puff') { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(puffSprite(1), 0, 0); }
+  else if (kind === 'magtile') { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(tileSprite({ type:'magnet' }, th, 1, 1), 0, 0); }
   else if (kind === 'arrow') g.drawImage(tileSprite({ type:'arrow', d:[1,-1], ch:'9' }, th, 1, 1), 0, 0);
   else g.drawImage(tileSprite({ type:kind }, th, 1, 1), 0, 0);
 }
@@ -1658,20 +1683,6 @@ function winHTML(){
     <div class="actions">
       <button class="btn primary" data-act="map" data-primary>Back to the map</button>
       <button class="btn" data-act="replay">Replay isle</button>
-    </div>
-  </div>`;
-}
-function failHTML(){
-  const msg = L.reason === 'time' ? 'The sun set before you found every crystal.'
-    : L.reason === 'wall' ? 'You struck a wall while flying.' : 'Your marble ran out of health.';
-  const title = L.reason === 'time' ? 'Out of daylight' : L.reason === 'wall' ? 'Clipped a wall' : 'Out of health';
-  return `<div class="panel narrow">
-    <span class="eyebrow">${isleLabel(L.i)}</span>
-    <h2>${title}</h2>
-    <p class="lede">${msg} You had ${L.gemsTotal - L.gemsLeft} of ${L.gemsTotal} crystals. Lives left: ${G.lives}.</p>
-    <div class="actions">
-      <button class="btn primary" data-act="replay" data-primary>Try again</button>
-      <button class="btn" data-act="map">Back to the map</button>
     </div>
   </div>`;
 }
