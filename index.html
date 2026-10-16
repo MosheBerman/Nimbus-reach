@@ -207,7 +207,7 @@ kbd{font-family:var(--font-pixel);font-size:12px;color:var(--ink);background:var
 
 /* ================= Kingdoms & levels =================
   .  open sky        #  ground         W  wall          S  start
-  *  crystal         k  key            L  lock          p  potion (+40 health)
+  *  crystal         k  key            L  lock          p  soup (+40 health)
   o  clock (+20s)    F  flight feather P  paint pot     j  spring
   c  crumble         i  ice            a  acid          l  lava
   e  storm puff (patrols across)       f  storm puff (patrols up and down)
@@ -479,22 +479,22 @@ const LEVELS = [
 /* Each isle's own mix of monsters and power-ups (placed on open ground, away from the start). */
 const COMBOS = [
   { mon:{ puff:2 }, pow:['clock'] },
-  { mon:{ puff:2 }, pow:['magnet','potion','fly'] },
+  { mon:{ puff:2 }, pow:['magnet','soup','fly'] },
   { mon:{ puff:2 }, pow:['shield','paint'] },
   { mon:{ puff:2 }, pow:['speed','clock'] },
-  { mon:{ puff:1 }, pow:['potion'] },
+  { mon:{ puff:1 }, pow:['soup'] },
   { mon:{ puff:1 }, pow:['freeze','magnet'] },
-  { mon:{ puff:3 }, pow:['shield','potion'] },
+  { mon:{ puff:3 }, pow:['shield','soup'] },
   { mon:{ puff:2 }, pow:['clock','fly'] },
   { mon:{ puff:2 }, pow:['magnet'] },
   { mon:{ puff:3 }, pow:['shield','speed'] },
   { mon:{ puff:2 }, pow:['freeze','clock'] },
-  { mon:{ puff:2 }, pow:['potion','fly'] },
+  { mon:{ puff:2 }, pow:['soup','fly'] },
   { mon:{ puff:3 }, pow:['magnet','speed'] },
   { mon:{ puff:4 }, pow:['shield','clock'] },
-  { mon:{ puff:2 }, pow:['freeze','potion'] },
-  { mon:{ puff:3 }, pow:['shield','magnet','potion','fly'] },
-  { mon:{ puff:3 }, pow:['speed','freeze','potion'] },
+  { mon:{ puff:2 }, pow:['freeze','soup'] },
+  { mon:{ puff:3 }, pow:['shield','magnet','soup','fly'] },
+  { mon:{ puff:3 }, pow:['speed','freeze','soup'] },
   { mon:{ puff:4 }, pow:['shield','clock','paint'] },
 ];
 
@@ -695,7 +695,7 @@ function cliffSprite(type, th){
 const ITEM_BM = {
   gem: { rows:['...aaaaa...','..abbbbba..','.abbcbbbba.','abbcccbbbbd','.dbbcbbbbd.','..dbbbbbd..','...dbbbd...','....dbd....','.....d.....'], pal:{ a:'#f2fffc', b:'#5ef0d2', c:'#ffffff', d:'#1f9483' } },
   key: { rows:['.yyy........','yo.oy.......','y...yyyyyyyy','yo.oy...y.y.','.yyy....y.y.'], pal:{ y:'#ffcf3a', o:'#b07a10' } },
-  potion: { rows:['..bbbb..','..cccc..','...cc...','..cccc..','.rrrrrr.','rrwrrrrr','rwrrrrrr','rrrrrrrr','rrrrrrdr','.rrrrdr.','..dddd..'], pal:{ b:'#8a5532', c:'#ffd6e6', r:'#ff4f8e', w:'#ffffff', d:'#b8285e' } },
+  soup: { rows:['...ss.....','....ss....','..ss......','..........','.bbbbbbbb.','bwwwwwwwwb','bwowwwwoob','bwwwwwwwwb','.bbbbbbbb.','..bbbbbb..','..........'], pal:{ s:'#cfd8e8', b:'#7a4a2a', w:'#ffb347', o:'#e86a3a' } },
   clock: { rows:['...oooo...','.oowwwwoo.','.owwwkwwo.','owwwwkwwwo','owwwwkwwwo','owwwwkkkwo','owwwwwwwwo','.owwwwwwo.','.oowwwwoo.','...oooo...'], pal:{ o:'#e39a2c', w:'#fff4dc', k:'#4a2d1a' } },
   fly: { rows:['........ww.','......wwwl.','.....wwwwl.','....wwwwl..','...wwwwl...','..wwwwl....','..wwwl.....','.wwwl......','.wwl.......','.l.........','l..........'], pal:{ w:'#f4fbff', l:'#7fa8d6' } },
   shield: { rows:['...bbbbb...','..bcccccb..','.bcwccccdb.','bcwccccccdb','bccccccccdb','bccccccccdb','bccccccccdb','.bcccccddb.','..bdddddb..','...bbbbb...'], pal:{ b:'#2f8fd6', c:'#bfe9ff', w:'#ffffff', d:'#86c8f0' } },
@@ -854,7 +854,7 @@ function charTile(ch){
   if (ARROWS[ch]) { const [dx,dy] = ARROWS[ch]; const m = Math.hypot(dx,dy); return { type:'arrow', d:[dx/m, dy/m], ch }; }
   return { type:'ground' };
 }
-const ITEM_OF = { '*':'gem', k:'key', p:'potion', o:'clock', F:'fly', P:'paint' };
+const ITEM_OF = { '*':'gem', k:'key', p:'soup', o:'clock', F:'fly', P:'paint' };
 
 function loadLevel(i){
   const def = LEVELS[i], rows = buildRows(def);
@@ -1173,7 +1173,7 @@ function pickup(x,y){
       if (L.gemsLeft === 0) { win(); return; }
       sfx('gem'); break;
     case 'key': L.keys++; L.score += 50; burst(cx, cy, '#ffd36b', 12, 0.5); sfx('key'); break;
-    case 'potion': p.hp = Math.min(100, p.hp + 40); L.score += 25; burst(cx, cy, '#ff7ab6', 14, 0.5); sfx('potion'); break;
+    case 'soup': p.hp = Math.min(100, p.hp + 40); L.score += 25; burst(cx, cy, '#ff7ab6', 14, 0.5); sfx('soup'); break;
     case 'clock': L.time += 20; L.timeMax = Math.max(L.timeMax, L.time); L.score += 25; burst(cx, cy, '#ffd36b', 14, 0.5); sfx('clock'); break;
     case 'fly': p.flyT = FLY_MAX; p.vz = 0; L.score += 25; burst(cx, cy, '#eaf6ff', 16, 0.6); sfx('fly'); break;
     case 'shield': p.shieldT = SHIELD_MAX; L.score += 25; burst(cx, cy, '#7fd6ff', 16, 0.5); sfx('fly'); break;
@@ -1186,9 +1186,9 @@ function pickup(x,y){
 function win(){
   const p = L.p;
   L.status = 'won'; L.endT = 0;
-  const day = Math.ceil(L.time)*10, hp = Math.ceil(p.hp)*5;
-  L.bonus = { day, hp, base:L.score };
-  L.score += day + hp;
+  const day = Math.ceil(L.time)*10, hp = Math.ceil(p.hp)*5, keys = L.keys*100;
+  L.bonus = { day, hp, keys, base:L.score };
+  L.score += day + hp + keys;
   const prevBest = save.best[L.i];
   L.newBest = prevBest === undefined || L.score > prevBest;
   if (L.newBest) save.best[L.i] = L.score;
@@ -1619,7 +1619,7 @@ function sfx(n){
     case 'gem': tone(988, .08, 'square', .04); tone(1480, .14, 'square', .035, 0, .06); break;
     case 'key': tone(660, .08, 'square', .03); tone(990, .12, 'square', .025, 0, .06); break;
     case 'unlock': tone(440, .1, 'triangle', .06); tone(660, .18, 'triangle', .05, 0, .08); break;
-    case 'potion': [523,659,784].forEach((f,k) => tone(f, .12, 'triangle', .05, 0, k*.05)); break;
+    case 'soup': [523,659,784].forEach((f,k) => tone(f, .12, 'triangle', .05, 0, k*.05)); break;
     case 'clock': tone(1200, .04, 'square', .03); tone(900, .04, 'square', .03, 0, .1); break;
     case 'fly': tone(400, .45, 'triangle', .05, 800); break;
     case 'paint': tone(700, .06, 'triangle', .025, -200); break;
@@ -1653,7 +1653,7 @@ const GUIDE = [
   ['spring', 0, 'Spring', 'Bounces you high and far.'],
   ['paint', 2, 'Paint pot', 'For 10 seconds, empty spots you touch gain tiles.'],
   ['fly', 1, 'Feather', 'Fly over sky and hazards for 8 seconds.'],
-  ['potion', 0, 'Potion', 'Restores 40 health.'],
+  ['soup', 0, 'Soup', 'Restores 40 health.'],
   ['clock', 0, 'Clock', 'Adds 20 seconds of daylight.'],
   ['lock', 0, 'Lock and key', 'Face a door and press jump with a key to open it.'],
   ['puff', 0, 'Storm puff', 'Patrols back and forth. Costs 25 health.'],
@@ -1668,7 +1668,7 @@ function drawIcon(c){
   const kind = c.dataset.icon, th = THEMES[+c.dataset.k];
   c.width = P; c.height = P;
   const g = c.getContext('2d');
-  if (['gem','potion','clock','fly','paint','shield','magnet','speed','freeze'].includes(kind)) { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(itemSprite(kind, th.paint), 0, 0); }
+  if (['gem','soup','clock','fly','paint','shield','magnet','speed','freeze'].includes(kind)) { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(itemSprite(kind, th.paint), 0, 0); }
   else if (kind === 'puff') { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(puffSprite(1), 0, 0); }
   else if (kind === 'magtile') { g.drawImage(tileSprite({ type:'ground' }, th, 1, 1), 0, 0); g.drawImage(tileSprite({ type:'magnet' }, th, 1, 1), 0, 0); }
   else if (kind === 'arrow') g.drawImage(tileSprite({ type:'arrow', d:[1,-1], ch:'9' }, th, 1, 1), 0, 0);
@@ -1697,6 +1697,7 @@ function winHTML(){
       <span>Crystals and pickups</span><b>${L.bonus.base.toLocaleString()}</b>
       <span>Daylight bonus</span><b>+${L.bonus.day.toLocaleString()}</b>
       <span>Health bonus</span><b>+${L.bonus.hp.toLocaleString()}</b>
+      ${L.bonus.keys ? `<span>Spare keys</span><b>+${L.bonus.keys.toLocaleString()}</b>` : ''}
       <span class="total">Isle score${L.newBest ? ' (new best)' : ''}</span><b class="total">${L.score.toLocaleString()}</b>
     </div>
     <div class="actions">
