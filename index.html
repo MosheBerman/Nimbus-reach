@@ -1227,7 +1227,7 @@ function update(dt){
       L.shown = true;
       if (L.status === 'won') { setMode('result'); show(winHTML()); }
       else if (G.lives > 0) playIsle(G.level);
-      else { setMode('result'); show(gameOverHTML()); }
+      else showMap();
     }
   }
   const sp = Math.hypot(p.vx, p.vy);
@@ -1705,17 +1705,6 @@ function winHTML(){
     </div>
   </div>`;
 }
-function gameOverHTML(){
-  return `<div class="panel narrow">
-    <span class="eyebrow">${isleLabel(L.i)}</span>
-    <h2>Out of lives</h2>
-    <p class="lede">Three strikes. The isle keeps its crystals... for now.</p>
-    <div class="actions">
-      <button class="btn primary" data-act="retry" data-primary>Retry isle (3 lives)</button>
-      <button class="btn" data-act="map">Back to the map</button>
-    </div>
-  </div>`;
-}
 function keyHTML(){
   return `<h3>Keys</h3>
     <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
@@ -1764,7 +1753,6 @@ function act(a, arg){
       break;
     case 'map': showMap(); break;
     case 'replay': playIsle(G.level); break;
-    case 'retry': G.lives = 3; playIsle(G.level); break;
     case 'resume': setMode('play'); hide(); break;
     case 'devoff': setDev(false); break;
   }
