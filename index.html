@@ -188,6 +188,7 @@ kbd{font-family:var(--font-pixel);font-size:12px;color:var(--ink);background:var
       <div class="stat"><span class="eyebrow">Crystals</span><span class="val"><i class="gem-ico"></i><span id="dGems">0/0</span></span></div>
       <div class="stat"><span class="eyebrow">Keys</span><span class="val"><i class="key-ico"></i><span id="dKeys">0</span></span></div>
       <div class="stat"><span class="eyebrow">Score</span><span class="val" id="dScore">0</span></div>
+      <div class="stat"><span class="eyebrow">Lives</span><span class="val" id="dLives">3</span></div>
     </div>
     <div class="map-status map-only" id="dMapStatus"></div>
     <div class="d-counts map-only">
@@ -529,7 +530,7 @@ function setDev(on){
 }
 const isCleared = i => save.best[i] !== undefined;
 
-const G = { mode:'title', level:0, muted:!!save.muted };
+const G = { mode:'title', level:0, lives:3, muted:!!save.muted };
 let L = null;
 let T = 0;
 
@@ -944,6 +945,7 @@ function moveAxis(ax, amt){
       continue;
     }
     const v = ax === 0 ? p.vx : p.vy;
+    if (t.type === 'wall' && p.flyT > 0 && L.status === 'play') { fail('wall'); return; }
     if (ax === 0) p.x = amt > 0 ? tx - R - 1e-4 : tx + 1 + R + 1e-4;
     else p.y = amt > 0 ? ty - R - 1e-4 : ty + 1 + R + 1e-4;
     if (Math.abs(v) > 2.2) sfx('bump');
@@ -1119,8 +1121,10 @@ function finishFall(){
 function fail(reason){
   if (L.status === 'failed' || L.status === 'won') return;
   L.status = 'failed'; L.reason = reason; L.endT = 0;
+  G.lives = Math.max(0, G.lives - 1);
   sfx('over');
 }
+function startRun(i){ G.lives = 3; playIsle(i); }
 function pickup(x,y){
   if (x < 0 || y < 0 || x >= L.W || y >= L.H) return;
   const k = y*L.W + x, it = L.items[k];
@@ -1184,7 +1188,7 @@ function update(dt){
     if (L.fallT > 0.95) finishFall();
   } else {
     L.endT += dt;
-    if (L.endT > 1.15 && !L.shown) { L.shown = true; setMode('result'); show(L.status === 'won' ? winHTML() : failHTML()); }
+    if (L.endT > 1.15 && !L.shown) { L.shown = true; setMode('result'); show(L.status === 'won' ? winHTML() : (G.lives > 0 ? failHTML() : gameOverHTML())); }
   }
   const sp = Math.hypot(p.vx, p.vy);
   if (sp > 0.4 && L.status === 'play') { p.face.x = p.vx/sp; p.face.y = p.vy/sp; }
@@ -1376,7 +1380,7 @@ function updateMap(dt){
     MAP.anim.t += dt / 0.45;
     if (MAP.anim.t >= 1) {
       const a = MAP.anim; MAP.anim = null;
-      if (a.play) { playIsle(a.to); return; }
+      if (a.play) { startRun(a.to); return; }
       MAP.at = a.to; save.at = a.to; persist(); MAP.msg = ''; updateMapDash();
     }
   }
@@ -1465,7 +1469,7 @@ const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
 function mapTap(x, y){
   if (MAP.anim) return;
   const g = compassGeom(), bx = x / SC, by = y / SC;
-  if (Math.abs(bx - g.cx) < 30 && Math.abs(by - g.cy) < 26) { if (MAP.at !== HOME) playIsle(MAP.at); else mapGo('right'); return; }
+  if (Math.abs(bx - g.cx) < 30 && Math.abs(by - g.cy) < 26) { if (MAP.at !== HOME) startRun(MAP.at); else mapGo('right'); return; }
   for (const dir of DIR_ORDER) {
     const [sx, sy] = g.slots[dir];
     if (Math.abs(bx - sx) < 28 && Math.abs(by - sy) < 26) { mapGo(dir); return; }
@@ -1476,7 +1480,7 @@ function mapTap(x, y){
 const $ = id => document.getElementById(id);
 const dash = $('dash');
 const D = { king:$('dKing'), name:$('dName'), hp:$('dHp'), hpN:$('dHpN'), mHp:$('mHp'), day:$('dDay'), dayN:$('dDayN'), mDay:$('mDay'),
-  gems:$('dGems'), keys:$('dKeys'), score:$('dScore'), mapStatus:$('dMapStatus'), cleared:$('dCleared'), total:$('dTotal') };
+  gems:$('dGems'), keys:$('dKeys'), score:$('dScore'), lives:$('dLives'), mapStatus:$('dMapStatus'), cleared:$('dCleared'), total:$('dTotal') };
 function setText(el, v){ v = String(v); if (el._v !== v) { el._v = v; el.textContent = v; } }
 function setW(el, pct){ const w = Math.max(0, Math.min(100, pct)).toFixed(1) + '%'; if (el._w !== w) { el._w = w; el.style.width = w; } }
 const POWS = [
@@ -1514,6 +1518,7 @@ function updateDash(){
   setText(D.gems, `${L.gemsTotal - L.gemsLeft}/${L.gemsTotal}`);
   setText(D.keys, L.keys);
   setText(D.score, L.score.toLocaleString());
+  setText(D.lives, G.lives);
 }
 const isTouch = matchMedia('(pointer:coarse)').matches;
 function updateMapDash(){
@@ -1657,13 +1662,26 @@ function winHTML(){
   </div>`;
 }
 function failHTML(){
-  const msg = L.reason === 'time' ? 'The sun set before you found every crystal.' : 'Your marble ran out of health.';
+  const msg = L.reason === 'time' ? 'The sun set before you found every crystal.'
+    : L.reason === 'wall' ? 'You struck a wall while flying.' : 'Your marble ran out of health.';
+  const title = L.reason === 'time' ? 'Out of daylight' : L.reason === 'wall' ? 'Clipped a wall' : 'Out of health';
   return `<div class="panel narrow">
     <span class="eyebrow">${isleLabel(L.i)}</span>
-    <h2>${L.reason === 'time' ? 'Out of daylight' : 'Out of health'}</h2>
-    <p class="lede">${msg} You had ${L.gemsTotal - L.gemsLeft} of ${L.gemsTotal} crystals.</p>
+    <h2>${title}</h2>
+    <p class="lede">${msg} You had ${L.gemsTotal - L.gemsLeft} of ${L.gemsTotal} crystals. Lives left: ${G.lives}.</p>
     <div class="actions">
       <button class="btn primary" data-act="replay" data-primary>Try again</button>
+      <button class="btn" data-act="map">Back to the map</button>
+    </div>
+  </div>`;
+}
+function gameOverHTML(){
+  return `<div class="panel narrow">
+    <span class="eyebrow">${isleLabel(L.i)}</span>
+    <h2>Out of lives</h2>
+    <p class="lede">Three strikes. The isle keeps its crystals... for now.</p>
+    <div class="actions">
+      <button class="btn primary" data-act="retry" data-primary>Retry isle (3 lives)</button>
       <button class="btn" data-act="map">Back to the map</button>
     </div>
   </div>`;
@@ -1715,6 +1733,7 @@ function act(a, arg){
       break;
     case 'map': showMap(); break;
     case 'replay': playIsle(G.level); break;
+    case 'retry': G.lives = 3; playIsle(G.level); break;
     case 'resume': setMode('play'); hide(); break;
     case 'devoff': setDev(false); break;
   }
@@ -1741,7 +1760,7 @@ function press(d){
 }
 function release(d){ const k = held.indexOf(d); if (k >= 0) held.splice(k, 1); }
 function jumpOrGo(){
-  if (G.mode === 'map') { if (MAP.anim) return; if (MAP.at !== HOME) playIsle(MAP.at); else mapGo('right'); return; }
+  if (G.mode === 'map') { if (MAP.anim) return; if (MAP.at !== HOME) startRun(MAP.at); else mapGo('right'); return; }
   if (G.mode === 'play' && L && L.status === 'play') L.jumpReq = true;
 }
 window.addEventListener('keydown', e => {
