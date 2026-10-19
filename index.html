@@ -236,35 +236,35 @@ const LEVELS = [
     '#*...*#.......#*...*#..#',
     '#*...*#..***..#*...*#..#',
     '##...##..*.*..##...##..#',
-    '#####......***.........#',
-    '#***#########*##########',
-    '#*.*#.......#*#........*',
-    '#*.*#..###..#*#..####..*',
-    '#***#..#*#..#*#..#**#..*',
+    '#####......**#.........#',
+    '########################',
+    '##.##.......###........#',
+    '##.##..###..###..####..#',
+    '#####..###..###..####..#',
     '#......###.......####...',
-    '#**********p************']},
+    '###########p############']},
   { k:0, name:'Hedgerow', time:150, walled:true, map:[
     'S#*********#***********#',
     '##WWWWWWWW#*#WWWWWWWW#*#',
-    '#*W......W#*#W......W#*#',
-    '#*W.****.W#*#W.****.W#*#',
-    '#*W.*##*.W#*#W.*##*.W#*#',
-    '#*W.****.W###W.****.W#*#',
-    '#*W...*..W#e#W...*..W#*#',
-    '#*WWWWLWWW###WWWWLWWW#*#',
-    '#*******#****#*******k*#',
+    '#*W......W#*#W......W###',
+    '##W.####.W###W.####.W###',
+    '##W.####.W###W.####.W###',
+    '##W.####.W###W.####.W###',
+    '##W...#..W#e#W...#..W###',
+    '##WWWWLWWW###WWWWLWWW###',
+    '#####################k##',
     '#k############p#########']},
   { k:0, name:'Puddle Steps', time:150, walled:true, map:[
     'S#****#aaaa#****#####***#',
     '##****#aaaa#****#...#***#',
     '###########aa############',
-    '#*a*a*a*a*##ccccccc##*a*#',
-    '#a*a*a*a*a##.......##a*a#',
-    '#*a*a*a*a*##ccccccc##*a*#',
+    '#*a*aaaaa###ccccccc###a##',
+    '#aaaaaaaaa##.......##aaa#',
+    '##aaaaaaa###ccccccc###a##',
     '############.......######',
-    '#....#***#..#*#*#*#..#..#',
-    '#.**.#*j*#..#######..#**#',
-    '#....#***#...........#**#',
+    '#....#####..#######..#..#',
+    '#.##.##j##..#######..####',
+    '#....#####...........####',
     '##########e#############']},
 
   // ---- Frostreach: ice ----
@@ -292,8 +292,8 @@ const LEVELS = [
     '..i****iiiiiiiiiiiiii......',
     '..........i................',
     '...***....i.....###...***..',
-    '...*.*....iiiiii#*#...*F*..',
-    '...***..........###...***..',
+    '...*.*....iiiiii###...#F#..',
+    '...###..........###...###..',
     '...........................']},
   { k:1, name:'Frozen Keep', time:170, walled:true, map:[
     'S##iiiiiiiiiiiiiiiiii###',
@@ -318,12 +318,12 @@ const LEVELS = [
     'aaa*aaaaaaa#**aaaaa#aaa*aaaaaa',
     'aaa#aaaaaaa###aaaaa#aaa##*aaaa',
     'aa*##aa*##aa*aaa#*####aa#p#aaa',
-    'aa#**aa#**aaaaaa##**##aa*##aaa',
-    'aa###aa###aaaaaa*####*aaaaaaaa',
-    'aaaaaaaaaaaa#*#aaaaaaaaa###aaa',
-    'aaaa#*##aaaa#o#aaa##*aaa#*#aaa',
-    'aaaa##**aaaa*##aaa#*#aaa###aaa',
-    'aaaa*###aaaaaaaaaa#*#aaaaaaaaa',
+    'aa#**aa#**aaaaaa##*###aa###aaa',
+    'aa###aa###aaaaaa######aaaaaaaa',
+    'aaaaaaaaaaaa###aaaaaaaaa###aaa',
+    'aaaa####aaaa#o#aaa###aaa###aaa',
+    'aaaa####aaaa###aaa###aaa###aaa',
+    'aaaa####aaaaaaaaaa###aaaaaaaaa',
     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']},
   { k:2, name:'Paint the Marsh', time:150, map:[
     'S###aaaaaaaaaaaaaaaaaaaaaaaaa',
@@ -357,14 +357,14 @@ const LEVELS = [
     '##*####l####*####*l###*##*#*###',
     '###**##l#*####*###l*####*####*#',
     '#*####*l###*llll*#l##*##lll####',
-    '###*####*#ll#**l##l####*l*l#*##',
-    '*####*#l##l####l####*##l#*#l##*',
-    '##*####l##llllll#*####*####*###',
-    '###p*##l#*####*###l*####*####*#',
-    '#*####*l###**###*#l##*##llllll#',
-    'lllllllllllllllllll####*##*#*##',
-    '*####*####*####*####*####*####*',
-    '##*###**####*####o####*####*###']},
+    '##########ll###l##l#####lll####',
+    '#######l##l####l#######l###l###',
+    '#######l##llllll###############',
+    '###p###l##########l############',
+    '#######l##########l#####llllll#',
+    'lllllllllllllllllll############',
+    '###############################',
+    '#################o#############']},
   { k:3, name:'Magma Flats', time:150, map:[
     'S###lllllllllllllllllllllll###',
     '#F*#lllllllllllllllllllllll**#',
@@ -398,13 +398,13 @@ const LEVELS = [
     '#88###*####*##*#*####*22##*#',
     '#88*####*####*####*###22##*#',
     '*88##*##WWWWWWW*####*#22#*##',
-    '#88####*W#*#*#W##*####22###*',
-    '#88#*###W*####W####*##22*###',
-    '#88###*#WWW*WWW#*####*22##*#',
-    '#88*####*#*##*####*###22####',
-    '*7444444444444444444441##*##',
-    '#7444444444444444444441####*',
-    '###**####*###**####*##*#*###']},
+    '#88####*W#####W#######22####',
+    '#88#####W#####W#######22####',
+    '#88#####WWW#WWW#######22####',
+    '#88###################22####',
+    '#7444444444444444444441#####',
+    '#7444444444444444444441#####',
+    '############################']},
   { k:4, name:'Compass Rose', time:170, map:[
     '.............................',
     '..*##.......*##.......*##....',
@@ -424,8 +424,8 @@ const LEVELS = [
     '.......11.....#2#...33.......',
     '..*##111......#2#....33###...',
     '..#**.........*2#......#*#...',
-    '..###.........##*......###...',
-    '..............#*#............',
+    '..###.........###......###...',
+    '..............###............',
     '.............................']},
   { k:4, name:'Arrow Citadel', time:180, map:[
     'S####*####*#.................',
@@ -450,10 +450,10 @@ const LEVELS = [
     '###..............*#',
     '#*#..##*****##...*#',
     '#*#..#.......#...*#',
-    '#*#..#.*****.#...*#',
-    '#*####.*...*.#####*',
-    '#*.....*...*......*',
-    '#*****c*****c******']},
+    '#*#..#.*****.#...##',
+    '######.#...#.######',
+    '##.....#...#......#',
+    '######c#####c######']},
   { k:5, name:'Lightning Fork', time:160, map:[
     'S##66666663..........',
     '###.......2..........',
@@ -462,20 +462,20 @@ const LEVELS = [
     '#*#..###..2..###.....',
     '#*iiiiiii*2*iiiiiii*.',
     '#*........2........*.',
-    '#**lll****1*******l*.']},
+    '#**lll****1*******l#.']},
   { k:5, name:'Eye of the Storm', time:180, map:[
     '....#############....',
     '...##***********##...',
     '..##*...........*##..',
     '..#*..aaaaaaaaa..*#..',
     '..#*..a*******a..*#..',
-    '..#*..a*.###.*a..*#..',
-    '..#*cca*.#S#.*acc*#..',
-    '..#*..a*.###.*a..*#..',
-    '..#*..a*******a..*#..',
-    '..#*..aaaaaaaaa..*#..',
-    '..##*...........*##..',
-    '...##***********##...',
+    '..##..a#.###.#a..##..',
+    '..##cca#.#S#.#acc##..',
+    '..##..a#.###.#a..##..',
+    '..##..a#######a..##..',
+    '..##..aaaaaaaaa..##..',
+    '..###...........###..',
+    '...###############...',
     '....#############....']},
 // ---- The Vaults ----
   { k:6, name:'Room to Room', time:170, walled:true, map:[
@@ -580,19 +580,19 @@ const LEVELS = [
     '................#o#...........',
     '..............................',
   ]},
-  { k:8, name:'Magnet Mile', time:180, walled:true, map:[
+  { k:8, name:'Magnet Mile', time:180, walled:true, route:[[23,11],[22,11],[22,10],[21,10],[20,10],[19,10],[19,9],[19,8],[19,7],[19,6],[19,5],[19,4],[19,3],[19,2],[18,2],[17,2],[16,2],[16,3],[16,4],[15,4],[14,4],[13,4],[13,5],[13,6],[13,7],[13,8],[13,9],[13,10],[12,10],[11,10],[10,10],[10,9],[10,8],[10,7],[10,6],[10,5],[10,4],[10,3],[10,2],[9,2],[8,2],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[7,8],[7,9],[7,10],[6,10],[5,10],[4,10],[4,11],[3,11]], map:[
     '..........................',
     '..........................',
-    '....m..mmmm.....memm..m...',
+    '....m..mmmm.....mmmm..m...',
     '....m..m..m.....m..m..m...',
     '....m..m..*..mmmm..m..*...',
     '....*..m..m..m..*..m..m...',
-    '....m..m..f..m..m..f..m...',
+    '....m..m..m..m..m..m..m...',
     '....m..m..m..*..m..m..m...',
     '....m..*..m..m..m..*..m...',
     '....m..m..m..m..m..m..m...',
-    '....mmmm..mmmm..m..mmmm...',
-    '**.p#..m..............#S#.',
+    '....mmmm..mmmm..m..fmfm...',
+    '**.p#..m..............fS#.',
     '..........................',
   ]},
   { k:8, name:'Patrol Hall', time:170, walled:true, map:[
@@ -612,7 +612,7 @@ const LEVELS = [
   ]},
 
   // ---- Prism Skies ----
-  { k:9, name:'Prism Vault', time:230, walled:false, map:[
+  { k:9, name:'Prism Vault', time:230, walled:true, map:[
     '..............................',
     '..........................SP..',
     '..........................P...',
@@ -685,13 +685,13 @@ const LEVELS = [
   { mon:{ puff:2 }, pow:['freeze','clock'] },
   { mon:{ puff:3 }, pow:['shield','soup'] },
   { mon:{ puff:2 }, pow:['speed','clock'] },
-  { mon:{ puff:3 }, pow:['shield','soup'] },
+  { mon:{ puff:3 }, pow:['shield','soup','paint'] },
   { mon:{ puff:2 }, pow:['clock'] },
-  { mon:{ puff:2 }, pow:['speed','shield'] },
+  { mon:{ puff:0 }, pow:['speed','shield'] },
   { mon:{ puff:3 }, pow:['magnet','soup'] },
   { mon:{ puff:4 }, pow:['freeze','clock'] },
   { mon:{ puff:3 }, pow:['paint','shield'] },
-  { mon:{ puff:2 }, pow:['clock'] },
+  { mon:{ puff:2 }, pow:['clock','paint'] },
 ];
 /* ================= Constants ================= */
 const ARROWS = { '8':[0,-1], '2':[0,1], '4':[-1,0], '6':[1,0], '7':[-1,-1], '9':[1,-1], '1':[-1,1], '3':[1,1] };
@@ -1071,12 +1071,16 @@ function loadLevel(i){
     tiles[k] = t;
   }
   populate(i, W, H, tiles, items, enemies, start);
+  if (def.route) for (const e of enemies) if (e.kind === 'puff') {
+    e.route = def.route;
+    e.ri = Math.max(0, def.route.findIndex(q => q[0] === e.x && q[1] === e.y));
+  }
   L = {
     i, def, theme:THEMES[def.k], W, H, tiles, items, enemies,
     gemsTotal:gems, gemsLeft:gems, keys:0, score:0,
     time:def.time, timeMax:def.time,
     p:{ x:start.x, y:start.y, vx:0, vy:0, z:0, vz:0, face:{ x:0, y:1 }, eye:{ x:0, y:1 },
-        hp:100, inv:0, flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, tk:-1, safe:{ x:start.x, y:start.y } },
+        hp:100, inv:0, flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, jumpHS:0, tk:-1, safe:{ x:start.x, y:start.y } },
     status:'play', fallT:0, endT:0, shown:false, reason:'',
     jumpReq:false, jumpHeld:false, jumpBuf:0, freezeT:0, crumbling:[], chunks:[], parts:[], shake:0, hazSfx:0,
     cam:{ x:start.x, y:start.y }, bonus:{},
@@ -1175,7 +1179,7 @@ function step(h){
   const grounded = !flying && p.z <= 0;
 
   if (p.jumpCD > 0) p.jumpCD -= h;
-  if (L.jumpReq && L.keys > 0) {
+  if ((L.jumpReq || L.jumpHeld) && L.keys > 0) {
     let bx = -1, by = -1, bd = 0.3;
     for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
       if (!ox && !oy) continue;
@@ -1190,15 +1194,23 @@ function step(h){
       L.jumpReq = false; L.jumpBuf = 0;
     }
   }
+  const [ix, iy] = inputVec();
   if ((L.jumpReq || L.jumpHeld) && grounded && p.jumpCD <= 0 && t.type !== 'magnet' && (t.type !== 'void' || p.coyote > 0)) {
     L.jumpReq = false; L.jumpBuf = 0; p.coyote = 0;
-    const smax = t.type === 'ice' ? SURF.ice.max : SURF.ground.max;
-    const sprint = Math.hypot(p.vx, p.vy) >= smax * 0.85;
-    p.vz = JUMP_V * (sprint ? 1.25 : 1); p.z = 0.001; sfx('jump');
+    // Normalized hop: fixed height, 1-2 tile carry, always enough arc to clear a villain.
+    const airtime = 2*JUMP_V/GRAV;
+    let dx = ix, dy = iy;
+    if (Math.hypot(dx, dy) < 0.1) {
+      const sp0 = Math.hypot(p.vx, p.vy);
+      if (sp0 > 0.5) { dx = p.vx/sp0; dy = p.vy/sp0; }
+      else { dx = p.face.x; dy = p.face.y; }
+    } else { const m = Math.hypot(dx, dy); dx /= m; dy /= m; }
+    p.jumpHS = Math.min(2, Math.max(1, Math.hypot(p.vx, p.vy)*airtime))/airtime;
+    p.vx = dx*p.jumpHS; p.vy = dy*p.jumpHS;
+    p.vz = JUMP_V; p.z = 0.001; sfx('jump');
   }
   else if (L.jumpReq && (L.jumpBuf += h) > 0.15) { L.jumpReq = false; L.jumpBuf = 0; }
 
-  const [ix, iy] = inputVec();
   const s = flying ? SURF.fly : (p.z > 0 ? SURF.air : (t.type === 'ice' ? SURF.ice : SURF.ground));
   const boost = (p.speedT > 0 && !flying ? 1.45 : 1) * (flying ? 1 : rollSpeed());
   p.vx += ix * s.acc * boost * h; p.vy += iy * s.acc * boost * h;
@@ -1207,7 +1219,8 @@ function step(h){
     if (Math.abs(iy) < 0.05 || (p.vy !== 0 && Math.sign(iy) !== Math.sign(p.vy))) p.vy = approach(p.vy, 0, s.fric*h);
   }
   const sp = Math.hypot(p.vx, p.vy);
-  const smax = s.max * boost;
+  let smax = s.max * boost;
+  if (p.z > 0 && p.jumpHS) smax = Math.min(smax, p.jumpHS);
   if (sp > smax) { const ns = Math.max(smax, sp - 14*h); p.vx *= ns/sp; p.vy *= ns/sp; }
 
   let cx = 0, cy = 0;
@@ -1218,7 +1231,7 @@ function step(h){
   if (flying) { p.z += (0.85 - p.z) * Math.min(1, h*6); p.vz = 0; }
   else if (p.z > 0 || p.vz > 0) {
     p.vz -= GRAV*h; p.z += p.vz*h;
-    if (p.z <= 0) { p.z = 0; p.vz = 0; p.jumpCD = 0.06; sfx('land'); }
+    if (p.z <= 0) { p.z = 0; p.vz = 0; p.jumpCD = 0.06; p.jumpHS = 0; sfx('land'); }
   }
 
   if (p.flyT > 0) { p.flyT -= h; if (p.flyT <= 0) { p.flyT = 0; sfx('powerdown'); } }
@@ -1296,9 +1309,17 @@ function updateMonsters(h){
         e.px = e.x + (e.tx - e.x)*k; e.py = e.y + (e.ty - e.y)*k;
         if (k >= 1) { e.x = e.tx; e.y = e.ty; e.moving = false; e.wait = 0.1; }
       } else if ((e.wait -= h) <= 0) {
-        let nx = e.x + e.dx, ny = e.y + e.dy;
-        if (puffBlocked(nx,ny)) { e.dx = -e.dx; e.dy = -e.dy; nx = e.x + e.dx; ny = e.y + e.dy; }
-        if (!puffBlocked(nx,ny)) { e.tx = nx; e.ty = ny; e.p = 0; e.moving = true; } else e.wait = 0.5;
+        if (e.route) {
+          // Chase puff: follows the route in one direction, never turns back.
+          const r = e.route;
+          if (e.ri < r.length - 1 && !puffBlocked(r[e.ri+1][0], r[e.ri+1][1])) {
+            e.tx = r[e.ri+1][0]; e.ty = r[e.ri+1][1]; e.p = 0; e.moving = true; e.ri++;
+          } else e.wait = 0.5;
+        } else {
+          let nx = e.x + e.dx, ny = e.y + e.dy;
+          if (puffBlocked(nx,ny)) { e.dx = -e.dx; e.dy = -e.dy; nx = e.x + e.dx; ny = e.y + e.dy; }
+          if (!puffBlocked(nx,ny)) { e.tx = nx; e.ty = ny; e.p = 0; e.moving = true; } else e.wait = 0.5;
+        }
       }
       e.cx = e.px + .5; e.cy = e.py + .5;
     } else if (e.kind === 'bug') {
@@ -1365,7 +1386,7 @@ function respawn(){
     e.p = 0; e.moving = false; e.wait = 0.8; e.cx = e.sx + .5; e.cy = e.sy + .5;
   }
   Object.assign(p, { x:p.safe.x, y:p.safe.y, vx:0, vy:0, z:0, vz:0, hp:100, inv:2,
-    flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, tk:-1 });
+    flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, jumpHS:0, tk:-1 });
   L.cam.x = p.safe.x; L.cam.y = p.safe.y;
   L.jumpReq = false; L.jumpBuf = 0; L.freezeT = 0; L.shake = 0;
   L.status = 'play'; L.endT = 0; L.shown = false; L.reason = '';
