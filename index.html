@@ -663,21 +663,21 @@ const LEVELS = [
 
   const COMBOS = [
   { mon:{ puff:2 }, pow:['clock'] },
-  { mon:{ puff:2 }, pow:['magnet','soup','fly'] },
+  { mon:{ puff:2 }, pow:['magnet','soup'] },
   { mon:{ puff:2 }, pow:['shield','paint'] },
   { mon:{ puff:2 }, pow:['speed','clock'] },
   { mon:{ puff:1 }, pow:['soup'] },
   { mon:{ puff:1 }, pow:['freeze','magnet'] },
   { mon:{ puff:3 }, pow:['shield','soup'] },
-  { mon:{ puff:2 }, pow:['clock','fly'] },
+  { mon:{ puff:2 }, pow:['clock'] },
   { mon:{ puff:2 }, pow:['magnet'] },
   { mon:{ puff:3 }, pow:['shield','speed'] },
   { mon:{ puff:2 }, pow:['freeze','clock'] },
-  { mon:{ puff:2 }, pow:['soup','fly'] },
+  { mon:{ puff:2 }, pow:['soup'] },
   { mon:{ puff:3 }, pow:['magnet','speed'] },
   { mon:{ puff:4 }, pow:['shield','clock'] },
   { mon:{ puff:2 }, pow:['freeze','soup'] },
-  { mon:{ puff:3 }, pow:['shield','magnet','soup','fly'] },
+  { mon:{ puff:3 }, pow:['shield','magnet','soup'] },
   { mon:{ puff:3 }, pow:['speed','freeze','soup'] },
   { mon:{ puff:4 }, pow:['shield','clock','paint'] },
   { mon:{ puff:2 }, pow:['speed','clock'] },
@@ -686,12 +686,12 @@ const LEVELS = [
   { mon:{ puff:3 }, pow:['shield','soup'] },
   { mon:{ puff:2 }, pow:['speed','clock'] },
   { mon:{ puff:3 }, pow:['shield','soup'] },
-  { mon:{ puff:2 }, pow:['fly','clock'] },
+  { mon:{ puff:2 }, pow:['clock'] },
   { mon:{ puff:2 }, pow:['speed','shield'] },
   { mon:{ puff:3 }, pow:['magnet','soup'] },
   { mon:{ puff:4 }, pow:['freeze','clock'] },
   { mon:{ puff:3 }, pow:['paint','shield'] },
-  { mon:{ puff:2 }, pow:['fly','clock'] },
+  { mon:{ puff:2 }, pow:['clock'] },
 ];
 /* ================= Constants ================= */
 const ARROWS = { '8':[0,-1], '2':[0,1], '4':[-1,0], '6':[1,0], '7':[-1,-1], '9':[1,-1], '1':[-1,1], '3':[1,1] };
@@ -1083,7 +1083,7 @@ function loadLevel(i){
   };
   held.length = 0;
 }
-function mkEnemy(x,y,dx,dy){ return { kind:'puff', x,y,dx,dy,px:x,py:y,tx:x,ty:y,p:0,moving:false,wait:0.8,ph:Math.random()*6, cx:x + .5, cy:y + .5 }; }
+function mkEnemy(x,y,dx,dy){ return { kind:'puff', x,y,dx,dy, sx:x, sy:y, sdx:dx, sdy:dy, px:x,py:y,tx:x,ty:y,p:0,moving:false,wait:0.8,ph:Math.random()*6, cx:x + .5, cy:y + .5 }; }
 function mkMon(kind, x, y, r){
   const cx = x + .5, cy = y + .5;
   if (kind === 'bug') { const a = (Math.floor(r()*4)*2 + 1) * Math.PI/4; return { kind, cx, cy, vx:Math.cos(a)*2.2, vy:Math.sin(a)*2.2, ph:r()*6 }; }
@@ -1194,7 +1194,7 @@ function step(h){
     L.jumpReq = false; L.jumpBuf = 0; p.coyote = 0;
     const smax = t.type === 'ice' ? SURF.ice.max : SURF.ground.max;
     const sprint = Math.hypot(p.vx, p.vy) >= smax * 0.85;
-    p.vz = JUMP_V * (sprint ? 1.5 : 1); p.z = 0.001; sfx('jump');
+    p.vz = JUMP_V * (sprint ? 1.25 : 1); p.z = 0.001; sfx('jump');
   }
   else if (L.jumpReq && (L.jumpBuf += h) > 0.15) { L.jumpReq = false; L.jumpBuf = 0; }
 
@@ -1203,8 +1203,8 @@ function step(h){
   const boost = (p.speedT > 0 && !flying ? 1.45 : 1) * (flying ? 1 : rollSpeed());
   p.vx += ix * s.acc * boost * h; p.vy += iy * s.acc * boost * h;
   if (s.fric) {
-    if (Math.abs(ix) < 0.05) p.vx = approach(p.vx, 0, s.fric*h);
-    if (Math.abs(iy) < 0.05) p.vy = approach(p.vy, 0, s.fric*h);
+    if (Math.abs(ix) < 0.05 || (p.vx !== 0 && Math.sign(ix) !== Math.sign(p.vx))) p.vx = approach(p.vx, 0, s.fric*h);
+    if (Math.abs(iy) < 0.05 || (p.vy !== 0 && Math.sign(iy) !== Math.sign(p.vy))) p.vy = approach(p.vy, 0, s.fric*h);
   }
   const sp = Math.hypot(p.vx, p.vy);
   const smax = s.max * boost;
@@ -1355,6 +1355,22 @@ function fail(reason){
   sfx('over');
 }
 function startRun(i){ G.lives = 3; playIsle(i); }
+function respawn(){
+  // Lose a life, keep the board: player and puffs reset, tiles/items/gems/keys/time stay.
+  const p = L.p;
+  for (const e of L.enemies) {
+    if (e.kind !== 'puff') continue;
+    e.x = e.sx; e.y = e.sy; e.dx = e.sdx; e.dy = e.sdy;
+    e.px = e.sx; e.py = e.sy; e.tx = e.sx; e.ty = e.sy;
+    e.p = 0; e.moving = false; e.wait = 0.8; e.cx = e.sx + .5; e.cy = e.sy + .5;
+  }
+  Object.assign(p, { x:p.safe.x, y:p.safe.y, vx:0, vy:0, z:0, vz:0, hp:100, inv:2,
+    flyT:0, paintT:0, shieldT:0, magnetT:0, speedT:0, jumpCD:0, springCD:0, coyote:0, tk:-1 });
+  L.cam.x = p.safe.x; L.cam.y = p.safe.y;
+  L.jumpReq = false; L.jumpBuf = 0; L.freezeT = 0; L.shake = 0;
+  L.status = 'play'; L.endT = 0; L.shown = false; L.reason = '';
+  setMode('play'); hide(); updateDash();
+}
 function pickup(x,y){
   if (x < 0 || y < 0 || x >= L.W || y >= L.H) return;
   const k = y*L.W + x, it = L.items[k];
@@ -1421,7 +1437,7 @@ function update(dt){
     if (L.endT > 1.15 && !L.shown) {
       L.shown = true;
       if (L.status === 'won') { setMode('result'); show(winHTML()); }
-      else if (G.lives > 0) playIsle(G.level);
+      else if (G.lives > 0) respawn();
       else showMap();
     }
   }
@@ -1650,7 +1666,7 @@ function renderMap(dt){
   drawIsland(MAP.at, g.cx, g.cy, 3);
   labels.push({ x:g.cx, y:g.cy + P + 14, center:true,
     text: MAP.at === HOME ? 'Home cloud' : `${isleCode(MAP.at)} ${LEVELS[MAP.at].name}`,
-    sub: MAP.at === HOME ? '' : (isCleared(MAP.at) ? (isTouch ? 'Tap me to replay' : 'Enter to replay') : (isTouch ? 'Tap me to play' : 'Enter to play')) });
+    sub: MAP.at === HOME ? '' : (isCleared(MAP.at) ? `Best ${save.best[MAP.at].toLocaleString()}` : (isTouch ? 'Tap me to play' : 'Enter to play')) });
   for (const dir of DIR_ORDER) {
     const n = neighbor(MAP.at, dir), [sx, sy] = g.slots[dir];
     if (n === null) { b.globalAlpha = 0.3; b.drawImage(cloudSprite(1, '#ffffff'), sx - 13, sy - 7); b.globalAlpha = 1; continue; }
@@ -1704,7 +1720,7 @@ const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
 function mapTap(x, y){
   if (MAP.anim) return;
   const g = compassGeom(), bx = x / SC, by = y / SC;
-  if (Math.abs(bx - g.cx) < 30 && Math.abs(by - g.cy) < 26) { if (MAP.at !== HOME) startRun(MAP.at); else mapGo('right'); return; }
+  if (Math.abs(bx - g.cx) < 30 && Math.abs(by - g.cy) < 26) { if (MAP.at === HOME) mapGo('right'); return; }
   for (const dir of DIR_ORDER) {
     const [sx, sy] = g.slots[dir];
     if (Math.abs(bx - sx) < 28 && Math.abs(by - sy) < 26) { mapGo(dir); return; }
@@ -1772,7 +1788,7 @@ function setMode(m){
   const playing = dash.dataset.mode === 'play';
   $('hint').innerHTML = playing
     ? '<kbd>Arrows</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> sound'
-    : '<kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Enter</kbd> replay this isle &middot; <kbd>Esc</kbd> title';
+    : '<kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Esc</kbd> title';
   $('jumpBtn').textContent = playing ? 'JUMP' : 'GO';
   $('pauseBtn').hidden = m !== 'play';
   $('mapSettingsBtn').hidden = m !== 'map';
@@ -1897,14 +1913,13 @@ function winHTML(){
     </div>
     <div class="actions">
       <button class="btn primary" data-act="map" data-primary>Back to the map</button>
-      <button class="btn" data-act="replay">Replay isle</button>
     </div>
   </div>`;
 }
 function keyHTML(){
   return `<h3>Keys</h3>
     <p class="lede key-only" style="font-size:14px"><kbd>Arrows</kbd> or <kbd>WASD</kbd> roll &middot; <kbd>Space</kbd> jump/use &middot; <kbd>P</kbd> pause &middot; <kbd>R</kbd> restart isle &middot; <kbd>M</kbd> sound</p>
-    <p class="lede key-only" style="font-size:14px">On the kingdom map: <kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Enter</kbd> replay this isle &middot; <kbd>Esc</kbd> title</p>
+    <p class="lede key-only" style="font-size:14px">On the kingdom map: <kbd>Arrows</kbd> roll toward an isle &middot; <kbd>Esc</kbd> title</p>
     <p class="lede touch-only" style="font-size:14px">Put your thumb anywhere on the left side and drag to roll. Hold JUMP, or anywhere on the right side, to keep hopping. On the map, swipe or tap toward an isle.</p>`;
 }
 let settingsFrom = 'title', settingsOpen = false;
@@ -1975,7 +1990,7 @@ function press(d){
 }
 function release(d){ const k = held.indexOf(d); if (k >= 0) held.splice(k, 1); }
 function jumpOrGo(){
-  if (G.mode === 'map') { if (MAP.anim) return; if (MAP.at !== HOME) startRun(MAP.at); else mapGo('right'); return; }
+  if (G.mode === 'map') { if (MAP.anim) return; if (MAP.at === HOME) mapGo('right'); return; }
   if (G.mode === 'play' && L && L.status === 'play') L.jumpReq = true;
 }
 window.addEventListener('keydown', e => {
